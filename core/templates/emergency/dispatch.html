@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>Dispatch Responders</h2>
+<div class="alert alert-info">
+    <strong>Emergency:</strong> {{ alert.emergency_type }}<br>
+    <small>{{ alert.timestamp }}</small>
+</div>
+
+<h3>Available Responders</h3>
+<form method="post">
+    {% csrf_token %}
+    <div class="responder-list">
+        {% for item in responders %}
+        <div class="responder-card">
+            <h4>{{ item.responder.user.get_full_name }}</h4>
+            <p>{{ item.responder.organization }}</p>
+            <p>{{ item.responder.contact_number }}</p>
+            <p class="distance">Distance: {{ item.distance }} km</p>
+            <button type="submit" name="responder_id" value="{{ item.responder.id }}" class="btn btn-primary">
+                Dispatch This Responder
+            </button>
+        </div>
+        {% empty %}
+        <p>No available responders found for this emergency type.</p>
+        {% endfor %}
+    </div>
+</form>
+{% endblock %}

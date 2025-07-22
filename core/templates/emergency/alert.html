@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>Emergency Alert</h2>
+<form method="post" id="emergencyForm">
+    {% csrf_token %}
+    <input type="hidden" name="lat" id="lat">
+    <input type="hidden" name="lng" id="lng">
+
+    <div class="emergency-types">
+        {% for type in emergency_types %}
+        <button type="submit" name="emergency_type" value="{{ type.id }}" class="btn btn-danger">
+            <i class="fas fa-{{ type.icon }}"></i> {{ type.name }}
+        </button>
+        {% endfor %}
+    </div>
+
+    <button type="submit" class="btn btn-lg btn-sos">
+        <i class="fas fa-bell"></i> SOS (Any Emergency)
+    </button>
+</form>
+
+<script>
+    document.getElementById('emergencyForm').addEventListener('submit', function (e) {
+        if (!navigator.geolocation) {
+            alert("Geolocation is not supported by your browser");
+            e.preventDefault();
+            return;
+        }
+
+        navigator.geolocation.getCurrentPosition(
+            function (position) {
+                document.getElementById('lat').value = position.coords.latitude;
+                document.getElementById('lng').value = position.coords.longitude;
+                e.target.submit();
+            },
+            function () {
+                alert("Unable to get your location. Using approximate location.");
+                // Submit anyway with empty coordinates (backend can approximate from IP)
+                e.target.submit();
+            }
+        );
+        e.preventDefault();
+    });
+</script>
+{% endblock %}

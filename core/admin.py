@@ -1,3 +1,8 @@
 from django.contrib import admin
+from .models import *
 
-# Register your models here.
+admin.site.register(EmergencyAlert)
+admin.site.register(EmergencyMessage)
+admin.site.register(EmergencyResponder)
+admin.site.register(EmergencyType)
+
