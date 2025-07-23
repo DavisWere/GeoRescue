@@ -1,40 +1,155 @@
-{% extends 'base.html' %}
 {% load static %}
+<!DOCTYPE html>
+<html>
 
-{% block extra_head %}
-<script src="{% static 'js/responder.js' %}"></script>
-{% endblock %}
+<head>
+    <title>GoRescue Dashboard</title>
+</head>
 
-{% block content %}
-<h1>Responder Dashboard</h1>
+<body>
+    <h1>GoRescue Dashboard</h1>
 
-<div id="availability-controls">
-    <button id="toggle-availability">
-        {% if responder.is_available %}Mark as Unavailable{% else %}Mark as Available{% endif %}
-    </button>
-</div>
-
-<div id="active-assignments">
-    <h2>Current Assignments</h2>
-    <div id="assignments-list">
-        <!-- Active assignments will appear here -->
+    <h2>Your Status</h2>
+    <div>
+        <p>Organization: {{ responder.organization }}</p>
+        <p>Current Status: {% if responder.is_available %}Available{% else %}Unavailable{% endif %}</p>
+        <p>Last Location Update: {{ responder.last_updated|timesince }} ago</p>
+        <p>Coordinates: {{ responder.latitude|floatformat:5 }}, {{ responder.longitude|floatformat:5 }}</p>
     </div>
-</div>
 
-<div id="assignment-details" style="display:none;">
-    <h3>Emergency Details</h3>
-    <p>Type: <span id="assignment-type"></span></p>
-    <p>Location: <span id="assignment-location"></span></p>
-    <p>Description: <span id="assignment-description"></span></p>
-    <div id="assignment-map" style="height: 300px; width: 100%;"></div>
+    <h2>Update Your Location</h2>
+    <form method="post" id="locationForm">
+        {% csrf_token %}
+        <div>
+            <button type="button" id="getLocationBtn">Get Current Location</button>
+            <span id="locationStatus">(Location not updated)</span>
+            <input type="hidden" name="latitude" id="latitude" value="{{ responder.latitude }}">
+            <input type="hidden" name="longitude" id="longitude" value="{{ responder.longitude }}">
+        </div>
+        <button type="submit" id="updateLocationBtn" disabled>Update Location</button>
+    </form>
 
-    <h3>Communication</h3>
-    <div id="assignment-messages">
-        <!-- Messages will appear here -->
-    </div>
-    <input type="text" id="assignment-message-input" placeholder="Type your message">
-    <button id="send-assignment-message">Send</button>
+    <h2>Assigned Alerts</h2>
+    {% if assigned_alerts %}
+    <ul>
+        {% for alert in assigned_alerts %}
+        <li>
+            {{ alert.emergency_type }} - {{ alert.timestamp|timesince }} ago
+            <p>Status: {{ alert.get_status_display }}</p>
+            <p>Location: {{ alert.latitude|floatformat:5 }}, {{ alert.longitude|floatformat:5 }}</p>
+            <p>Distance: <span class="distance" data-alert-lat="{{ alert.latitude }}"
+                    data-alert-lon="{{ alert.longitude }}" data-responder-lat="{{ responder.latitude }}"
+                    data-responder-lon="{{ responder.longitude }}">
+                    Calculating...
+                </span></p>
+            <a href="{% url 'responder_alert_detail' alert.id %}">View Details</a>
+        </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p>No currently assigned alerts</p>
+    {% endif %}
 
-    <button id="update-status">Update Status</button>
-</div>
-{% endblock %}
+    <h2>Recently Completed Alerts</h2>
+    {% if completed_alerts %}
+    <ul>
+        {% for alert in completed_alerts %}
+        <li>
+            {{ alert.emergency_type }} - {{ alert.timestamp|date:"M d, Y H:i" }}
+            <span>(Resolved)</span>
+        </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p>No completed alerts yet</p>
+    {% endif %}
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Location update functionality
+            const getLocationBtn = document.getElementById('getLocationBtn');
+            const locationStatus = document.getElementById('locationStatus');
+            const latitudeInput = document.getElementById('latitude');
+            const longitudeInput = document.getElementById('longitude');
+            const updateLocationBtn = document.getElementById('updateLocationBtn');
+
+            getLocationBtn.addEventListener('click', function () {
+                locationStatus.textContent = "Detecting your location...";
+
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(
+                        function (position) {
+                            const lat = position.coords.latitude;
+                            const lng = position.coords.longitude;
+
+                            latitudeInput.value = lat;
+                            longitudeInput.value = lng;
+
+                            locationStatus.textContent = `Location ready to update: ${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+                            locationStatus.style.color = 'green';
+                            updateLocationBtn.disabled = false;
+
+                            if (position.coords.accuracy) {
+                                locationStatus.textContent += ` (±${Math.round(position.coords.accuracy)}m)`;
+                            }
+                        },
+                        function (error) {
+                            let errorMessage = "Error: ";
+                            switch (error.code) {
+                                case error.PERMISSION_DENIED:
+                                    errorMessage += "Location permission denied";
+                                    break;
+                                case error.POSITION_UNAVAILABLE:
+                                    errorMessage += "Location unavailable";
+                                    break;
+                                case error.TIMEOUT:
+                                    errorMessage += "Location request timed out";
+                                    break;
+                                default:
+                                    errorMessage += "Couldn't get location";
+                            }
+                            locationStatus.textContent = errorMessage;
+                            locationStatus.style.color = 'red';
+                        },
+                        { enableHighAccuracy: true, timeout: 10000 }
+                    );
+                } else {
+                    locationStatus.textContent = "Geolocation not supported";
+                    locationStatus.style.color = 'red';
+                }
+            });
+
+            // Calculate distances for all alerts
+            document.querySelectorAll('.distance').forEach(el => {
+                const alertLat = parseFloat(el.getAttribute('data-alert-lat'));
+                const alertLon = parseFloat(el.getAttribute('data-alert-lon'));
+                const responderLat = parseFloat(el.getAttribute('data-responder-lat'));
+                const responderLon = parseFloat(el.getAttribute('data-responder-lon'));
+
+                if (!isNaN(alertLat) && !isNaN(alertLon) &&
+                    !isNaN(responderLat) && !isNaN(responderLon)) {
+                    const distance = calculateDistance(alertLat, alertLon, responderLat, responderLon);
+                    el.textContent = `${distance.toFixed(1)} km`;
+                }
+            });
+
+            function calculateDistance(lat1, lon1, lat2, lon2) {
+                const R = 6371; // Earth radius in km
+                const dLat = radians(lat2 - lat1);
+                const dLon = radians(lon2 - lon1);
+                const a =
+                    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                    Math.cos(radians(lat1)) * Math.cos(radians(lat2)) *
+                    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+                const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+                return R * c;
+            }
+
+            function radians(degrees) {
+                return degrees * Math.PI / 180;
+            }
+        });
+    </script>
+</body>
+
+</html>

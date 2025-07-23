@@ -1,0 +1,62 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Alert Details</title>
+</head>
+
+<body>
+    <h1>Alert Details</h1>
+    <a href="{% url 'responder_dashboard' %}">Back to Dashboard</a>
+
+    <h2>{{ alert.emergency_type }} Emergency</h2>
+    <p>Status: <strong>{{ alert.get_status_display }}</strong></p>
+    <p>Reported: {{ alert.timestamp|timesince }} ago</p>
+    <p>Location: {{ alert.latitude|floatformat:5 }}, {{ alert.longitude|floatformat:5 }}</p>
+    {% if alert.description %}
+    <p>Description: {{ alert.description }}</p>
+    {% endif %}
+
+    <h3>Update Status</h3>
+    <form method="post">
+        {% csrf_token %}
+        <select name="status">
+            <option value="dispatched" {% if "dispatched" in alert.status|default:"" %}selected{% endif %}>Dispatched</option>
+            <option value="in_progress" {% if "in_progress" in alert.status|default:"" %}selected{% endif %}>In Progress
+            </option>
+            <option value="resolved" {% if "resolved" in alert.status|default:"" %}selected{% endif %}>Resolved</option>
+        </select>
+        <button type="submit">Update Status</button>
+    </form>
+
+    <h3>Messages</h3>
+    <div class="messages">
+        {% for message in messages %}
+        <div class="message {% if message.is_from_responder %}responder{% else %}victim{% endif %}">
+            <strong>{{ message.sender.username }}</strong>
+            <small>({{ message.timestamp|timesince }} ago)</small>:
+            <p>{{ message.message }}</p>
+        </div>
+        {% empty %}
+        <p>No messages yet</p>
+        {% endfor %}
+    </div>
+
+    <h3>Send Message</h3>
+    <form method="post">
+        {% csrf_token %}
+        <textarea name="message" placeholder="Type your message..." required></textarea>
+        <button type="submit">Send Message</button>
+    </form>
+
+    <script>
+        // Auto-scroll to bottom of messages
+        const messagesContainer = document.querySelector('.messages');
+        if (messagesContainer) {
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+    </script>
+</body>
+
+</html>

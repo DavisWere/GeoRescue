@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Alert Messages</title>
+</head>
+
+<body>
+    <h1>Messages for Alert: {{ alert.emergency_type }}</h1>
+    <p>Status: {{ alert.status }}</p>
+    {% if alert.assigned_responder %}
+    <p>Assigned Responder: {{ alert.assigned_responder.user.get_full_name }}</p>
+    {% endif %}
+
+    <div class="messages">
+        {% for message in messages %}
+        <div class="message {% if message.is_from_responder %}responder{% else %}victim{% endif %}">
+            <strong>{{ message.sender.username }}</strong> ({{ message.timestamp }}):
+            <p>{{ message.message }}</p>
+        </div>
+        {% endfor %}
+    </div>
+
+    <form method="post">
+        {% csrf_token %}
+        <textarea name="message" placeholder="Type your message" required></textarea>
+        <button type="submit">Send Message</button>
+    </form>
+
+    <a href="{% url 'victim_dashboard' %}">Back to Dashboard</a>
+</body>
+
+</html>

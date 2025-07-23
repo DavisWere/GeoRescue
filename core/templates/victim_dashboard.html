@@ -1,40 +1,160 @@
-{% extends 'base.html' %}
 {% load static %}
+<!DOCTYPE html>
+<html lang="en">
 
-{% block extra_head %}
-<script src="{% static 'js/victim.js' %}"></script>
-{% endblock %}
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GoRescue</title>
+    <link rel="stylesheet" href="{% static 'css/victim_dashboard.css' %}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
 
-{% block content %}
-<h1>Emergency Dashboard</h1>
+<body>
+    <div class="container">
+        <header class="dashboard-header">
+            <div class="logo-section">
+                <i class="fas fa-shield-alt logo-icon"></i>
+                <h1>GoRescue</h1>
+            </div>
+            <div class="status-indicator">
+                <div class="status-dot"></div>
+                <span>System Active</span>
+            </div>
+        </header>
 
-<div id="emergency-controls">
-    <button id="request-help">Request Emergency Help</button>
-    <select id="emergency-type">
-        <option value="">Select emergency type</option>
-        {% for type in emergency_types %}
-        <option value="{{ type.id }}">{{ type.name }}</option>
-        {% endfor %}
-    </select>
-    <textarea id="emergency-description" placeholder="Brief description (optional)"></textarea>
-</div>
+        <main class="dashboard-content">
+            <!-- Emergency Request Section -->
+            <section class="emergency-request-section">
+                <div class="section-header">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <h2>Request Emergency Help</h2>
+                </div>
 
-<div id="active-alert" style="display:none;">
-    <h2>Active Emergency</h2>
-    <p>Status: <span id="alert-status"></span></p>
-    <p>Responder: <span id="assigned-responder"></span></p>
-    <p>ETA: <span id="responder-eta"></span> minutes</p>
-    <div id="responder-map" style="height: 300px; width: 100%;"></div>
+                <form method="post" id="emergencyForm" class="emergency-form">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label for="emergency_type">
+                            <i class="fas fa-list-ul"></i>
+                            Emergency Type
+                        </label>
+                        <select name="emergency_type" id="emergency_type" required>
+                            <option value="">Select emergency type</option>
+                            {% for type in emergency_types %}
+                            <option value="{{ type.id }}">{{ type.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
 
-    <h3>Communication</h3>
-    <div id="message-container">
-        <!-- Messages will appear here -->
+                    <div class="form-group">
+                        <label>
+                            <i class="fas fa-map-marker-alt"></i>
+                            Your Location
+                        </label>
+                        <div class="location-section">
+                            <button type="button" id="getLocationBtn" class="location-btn">
+                                <i class="fas fa-crosshairs"></i>
+                                Get My Current Location
+                            </button>
+                            <div id="locationStatus" class="location-status">Location not yet obtained</div>
+                        </div>
+                        <input type="hidden" name="latitude" id="latitude">
+                        <input type="hidden" name="longitude" id="longitude">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="description">
+                            <i class="fas fa-comment-alt"></i>
+                            Description (optional)
+                        </label>
+                        <textarea name="description" id="description"
+                            placeholder="Provide additional details about your emergency..."></textarea>
+                    </div>
+
+                    <button type="submit" id="submitBtn" class="submit-btn" disabled>
+                        <i class="fas fa-paper-plane"></i>
+                        Send Emergency Alert
+                    </button>
+                </form>
+            </section>
+
+            <!-- Active Alerts Section -->
+            <section class="active-alerts-section">
+                <div class="section-header">
+                    <i class="fas fa-bell"></i>
+                    <h2>Your Active Alerts</h2>
+                    <span class="alert-count">{{ active_alerts|length }}</span>
+                </div>
+
+                <div class="alerts-container">
+                    {% for alert in active_alerts %}
+                    <div class="alert-card">
+                        <div class="alert-header">
+                            <div class="alert-type">
+                                <i class="fas fa-exclamation-circle"></i>
+                                <span>{{ alert.emergency_type }}</span>
+                            </div>
+                            <div class="alert-status status-{{ alert.status|lower }}">
+                                {{ alert.status }}
+                            </div>
+                        </div>
+
+                        <div class="alert-info">
+                            <div class="alert-time">
+                                <i class="fas fa-clock"></i>
+                                {{ alert.timestamp|date:"M d, Y H:i" }}
+                            </div>
+                            <a href="{% url 'alert_messages' alert.id %}" class="view-messages-btn">
+                                <i class="fas fa-comments"></i>
+                                View Messages
+                            </a>
+                        </div>
+
+                        <div class="tracking-container" data-alert-id="{{ alert.id }}"
+                            data-victim-lat="{{ alert.latitude }}" data-victim-lon="{{ alert.longitude }}"
+                            data-responder-lat="{% if alert.assigned_responder %}{{ alert.assigned_responder.latitude }}{% endif %}"
+                            data-responder-lon="{% if alert.assigned_responder %}{{ alert.assigned_responder.longitude }}{% endif %}">
+
+                            <div class="tracking-map">
+                                <div class="victim-marker" title="Your Location">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                                <div class="responder-marker" title="Responder Location">
+                                    <i class="fas fa-ambulance"></i>
+                                </div>
+                                <div class="path-line"></div>
+                            </div>
+
+                            <div class="tracking-info">
+                                <div class="distance-info">
+                                    <i class="fas fa-route"></i>
+                                    <span>Distance: </span>
+                                    <span class="distance-value">Calculating...</span>
+                                </div>
+                                <div class="eta-info">
+                                    <i class="fas fa-hourglass-half"></i>
+                                    <span>ETA: </span>
+                                    <span class="eta-value">Calculating...</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="no-alerts">
+                        <i class="fas fa-check-circle"></i>
+                        <p>No active alerts</p>
+                        <span>You're all set! No emergency alerts at the moment.</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </section>
+        </main>
     </div>
-    <input type="text" id="message-input" placeholder="Type your message">
-    <button id="send-message">Send</button>
-</div>
 
-<div id="no-active-alert">
-    <p>No active emergencies. Click "Request Emergency Help" if you need assistance.</p>
-</div>
-{% endblock %}
+    <script src="{% static 'js/tracking.js' %}"></script>
+    <script src="{% static 'js/victim_dashboard.js' %}"></script>
+
+</body>
+
+</html>

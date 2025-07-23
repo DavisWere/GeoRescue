@@ -60,6 +60,11 @@ class EmergencyAlert(models.Model):
     
     def __str__(self):
         return f"{self.emergency_type} alert at {self.timestamp}"
+    
+    class Meta:
+        ordering = ['-timestamp']
+
+    
 
 class EmergencyMessage(models.Model):
     alert = models.ForeignKey(EmergencyAlert, on_delete=models.CASCADE, related_name='messages')
