@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block extra_head %}
+<script src="{% static 'js/responder.js' %}"></script>
+{% endblock %}
+
+{% block content %}
+<h1>Responder Dashboard</h1>
+
+<div id="availability-controls">
+    <button id="toggle-availability">
+        {% if responder.is_available %}Mark as Unavailable{% else %}Mark as Available{% endif %}
+    </button>
+</div>
+
+<div id="active-assignments">
+    <h2>Current Assignments</h2>
+    <div id="assignments-list">
+        <!-- Active assignments will appear here -->
+    </div>
+</div>
+
+<div id="assignment-details" style="display:none;">
+    <h3>Emergency Details</h3>
+    <p>Type: <span id="assignment-type"></span></p>
+    <p>Location: <span id="assignment-location"></span></p>
+    <p>Description: <span id="assignment-description"></span></p>
+    <div id="assignment-map" style="height: 300px; width: 100%;"></div>
+
+    <h3>Communication</h3>
+    <div id="assignment-messages">
+        <!-- Messages will appear here -->
+    </div>
+    <input type="text" id="assignment-message-input" placeholder="Type your message">
+    <button id="send-assignment-message">Send</button>
+
+    <button id="update-status">Update Status</button>
+</div>
+{% endblock %}

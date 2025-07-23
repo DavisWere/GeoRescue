@@ -44,7 +44,7 @@ class EmergencyAlert(models.Model):
         ('resolved', 'Resolved'),
     ]
     
-    user = models.OneToOneField(User, on_delete=models.CASCADE, limit_choices_to={'user_type': 'victim'})
+    user = models.ForeignKey(User, on_delete=models.CASCADE, limit_choices_to={'user_type': 'victim'})
     emergency_type = models.ForeignKey(EmergencyType, on_delete=models.PROTECT, null=True, blank=True)
     latitude = models.DecimalField(max_digits=9, decimal_places=6)
     longitude = models.DecimalField(max_digits=9, decimal_places=6)

@@ -1,272 +1,197 @@
-from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
-from .models import EmergencyAlert, EmergencyResponder, EmergencyMessage, EmergencyType
-import json
-from math import radians, sin, cos, sqrt, atan2
+from .models import EmergencyType, EmergencyAlert, EmergencyResponder, EmergencyMessage
 from django.views.decorators.csrf import csrf_exempt
-
-def calculate_distance(lat1, lon1, lat2, lon2):
-    # Haversine formula to calculate distance between two coordinates (in km)
-    R = 6371.0  # Earth radius in km
-    
-    lat1 = radians(float(lat1))
-    lon1 = radians(float(lon1))
-    lat2 = radians(float(lat2))
-    lon2 = radians(float(lon2))
-    
-    dlon = lon2 - lon1
-    dlat = lat2 - lat1
-    
-    a = sin(dlat / 2)**2 + cos(lat1) * cos(lat2) * sin(dlon / 2)**2
-    c = 2 * atan2(sqrt(a), sqrt(1 - a))
-    
-    return R * c
+import json
 
 @login_required
-def dashboard(request):
-    if request.user.user_type == 'responder':
-        return responder_dashboard(request)
-    return victim_dashboard(request)
-
 def victim_dashboard(request):
-    # Get user's active alert if exists
-    active_alert = EmergencyAlert.objects.filter(user=request.user, status__in=['pending', 'dispatched', 'in_progress']).first()
-    
-    if request.method == 'POST' and not active_alert:
-        lat = request.POST.get('lat')
-        lng = request.POST.get('lng')
-        emergency_type_id = request.POST.get('emergency_type')
-        
-        if lat and lng:
-            emergency_type = EmergencyType.objects.get(id=emergency_type_id) if emergency_type_id else None
-            
-            alert = EmergencyAlert.objects.create(
-                user=request.user,
-                emergency_type=emergency_type,
-                latitude=lat,
-                longitude=lng,
-                status='pending'
-            )
-            return redirect('dashboard')
+    if request.user.user_type != 'victim':
+        return redirect('responder_dashboard')
     
     emergency_types = EmergencyType.objects.all()
-    context = {
-        'emergency_types': emergency_types,
-        'active_alert': active_alert
-    }
-    
-    if active_alert and active_alert.assigned_responder:
-        # Calculate distance to responder
-        responder = active_alert.assigned_responder
-        distance = calculate_distance(
-            active_alert.latitude, active_alert.longitude,
-            responder.latitude, responder.longitude
-        )
-        context.update({
-            'responder_distance': round(distance, 2),
-            'responder': responder
-        })
-    
-    return render(request, 'emergency/victim_dashboard.html', context)
+    return render(request, 'victim_dashboard.html', {
+        'emergency_types': emergency_types
+    })
 
+@login_required
 def responder_dashboard(request):
-    # Get responder profile
-    responder = request.user.emergencyresponder
+    if request.user.user_type != 'responder':
+        return redirect('victim_dashboard')
     
-    # Get available alerts for responder's emergency types
-    available_alerts = EmergencyAlert.objects.filter(
-        status='pending',
-        emergency_type__in=responder.emergency_types.all()
-    ).exclude(user=request.user)
+    try:
+        responder = EmergencyResponder.objects.get(user=request.user)
+    except EmergencyResponder.DoesNotExist:
+        return redirect('logout')
     
-    # Get alerts assigned to this responder
-    assigned_alerts = EmergencyAlert.objects.filter(
-        assigned_responder=responder,
-        status__in=['dispatched', 'in_progress']
-    )
-    
-    if request.method == 'POST':
-        alert_id = request.POST.get('alert_id')
-        action = request.POST.get('action')
-        
-        if alert_id and action:
-            alert = EmergencyAlert.objects.get(id=alert_id)
-            
-            if action == 'accept':
-                alert.assigned_responder = responder
-                alert.status = 'dispatched'
-                responder.is_available = False
-                responder.save()
-            elif action == 'complete':
-                alert.status = 'resolved'
-                responder.is_available = True
-                responder.save()
-            
-            alert.save()
-            return redirect('dashboard')
-    
-    return render(request, 'emergency/responder_dashboard.html', {
-        'available_alerts': available_alerts,
-        'assigned_alerts': assigned_alerts,
+    return render(request, 'responder_dashboard.html', {
         'responder': responder
     })
 
+# API Views
 @login_required
-def emergency_chat(request, alert_id):
-    alert = get_object_or_404(EmergencyAlert, id=alert_id)
-    
-    # Verify user has access to this alert
-    if request.user not in [alert.user, alert.assigned_responder.user]:
-        return redirect('dashboard')
-    
-    if request.method == 'POST':
-        message = request.POST.get('message')
-        if message:
-            is_responder = request.user == alert.assigned_responder.user if alert.assigned_responder else False
-            EmergencyMessage.objects.create(
-                alert=alert,
-                sender=request.user,
-                message=message,
-                is_from_responder=is_responder
-            )
-    
-    messages = EmergencyMessage.objects.filter(alert=alert).order_by('timestamp')
-    return render(request, 'emergency/chat.html', {
-        'alert': alert,
-        'messages': messages
-    })
-
 @csrf_exempt
-@login_required
-def update_location(request):
-    if request.method == 'POST' and request.user.user_type == 'responder':
+def create_alert(request):
+    if request.method == 'POST' and request.user.user_type == 'victim':
         try:
-            data = json.loads(request.body)
-            lat = data.get('lat')
-            lng = data.get('lng')
-            
-            responder = request.user.emergencyresponder
-            responder.latitude = lat
-            responder.longitude = lng
-            responder.save()
-            
-            return JsonResponse({'status': 'success'})
-        except Exception as e:
-            return JsonResponse({'status': 'error', 'message': str(e)})
-    
-    return JsonResponse({'status': 'invalid request'})
+            # Get data from request.POST instead of request.body
+            data = {
+                'emergency_type': request.POST.get('emergency_type'),
+                'description': request.POST.get('description', ''),
+                'latitude': request.POST.get('latitude'),
+                'longitude': request.POST.get('longitude')
+            }
 
-@login_required
-def emergency_alert(request):
-    if request.method == 'POST':
-        lat = request.POST.get('lat')
-        lng = request.POST.get('lng')
-        emergency_type_id = request.POST.get('emergency_type')
-        
-        if lat and lng:
-            emergency_type = EmergencyType.objects.get(id=emergency_type_id) if emergency_type_id else None
-            
+            # Validate required fields
+            if not data['emergency_type']:
+                return JsonResponse({'error': 'Emergency type is required'}, status=400)
+            if not data['latitude'] or not data['longitude']:
+                return JsonResponse({'error': 'Location coordinates are required'}, status=400)
+
+            # Get emergency type
+            try:
+                emergency_type = EmergencyType.objects.get(id=data['emergency_type'])
+            except EmergencyType.DoesNotExist:
+                return JsonResponse({'error': 'Invalid emergency type'}, status=400)
+            except ValueError:
+                return JsonResponse({'error': 'Emergency type must be a number'}, status=400)
+
+            # Create alert
             alert = EmergencyAlert.objects.create(
                 user=request.user,
                 emergency_type=emergency_type,
-                latitude=lat,
-                longitude=lng,
-                status='pending'
+                latitude=data['latitude'],
+                longitude=data['longitude'],
+                description=data['description']
             )
-            return redirect('responder_dispatch', alert_id=alert.id)
-    
-    emergency_types = EmergencyType.objects.all()
-    return render(request, 'emergency/alert.html', {'emergency_types': emergency_types})
-
-@login_required
-def responder_dispatch(request, alert_id):
-    alert = get_object_or_404(EmergencyAlert, id=alert_id, user=request.user)
-    
-    if request.method == 'POST':
-        responder_id = request.POST.get('responder_id')
-        if responder_id:
-            responder = EmergencyResponder.objects.get(id=responder_id)
-            alert.assigned_responder = responder
-            alert.status = 'dispatched'
-            alert.save()
-            return redirect('emergency_chat', alert_id=alert.id)
-    
-    # Get responders for this emergency type
-    responders = EmergencyResponder.objects.filter(
-        is_available=True,
-        emergency_types=alert.emergency_type
-    )
-    
-    # Calculate distance for each responder
-    responders_with_distance = []
-    for responder in responders:
-        distance = calculate_distance(
-            alert.latitude, alert.longitude,
-            responder.latitude, responder.longitude
-        )
-        responders_with_distance.append({
-            'responder': responder,
-            'distance': round(distance, 2)
-        })
-    
-    # Sort by distance
-    responders_with_distance.sort(key=lambda x: x['distance'])
-    
-    return render(request, 'emergency/dispatch.html', {
-        'alert': alert,
-        'responders': responders_with_distance[:5]  # Show top 5 nearest
-    })
-
-@login_required
-def emergency_chat(request, alert_id):
-    alert = get_object_or_404(EmergencyAlert, id=alert_id)
-    
-    if request.method == 'POST':
-        message = request.POST.get('message')
-        if message:
-            is_responder = request.user == alert.assigned_responder.user if alert.assigned_responder else False
-            EmergencyMessage.objects.create(
-                alert=alert,
-                sender=request.user,
-                message=message,
-                is_from_responder=is_responder
-            )
-    
-    messages = EmergencyMessage.objects.filter(alert=alert).order_by('timestamp')
-    return render(request, 'emergency/chat.html', {
-        'alert': alert,
-        'messages': messages
-    })
-
-@login_required
-def status_update(request, alert_id):
-    alert = get_object_or_404(EmergencyAlert, id=alert_id)
-    
-    if request.method == 'POST' and alert.assigned_responder and request.user == alert.assigned_responder.user:
-        new_status = request.POST.get('status')
-        if new_status in dict(EmergencyAlert.STATUS_CHOICES).keys():
-            alert.status = new_status
-            alert.save()
-    
-    return render(request, 'emergency/status.html', {'alert': alert})
-
-@csrf_exempt
-@login_required
-def update_location(request):
-    if request.method == 'POST':
-        try:
-            data = json.loads(request.body)
-            lat = data.get('lat')
-            lng = data.get('lng')
             
-            responder = request.user.emergencyresponder
-            responder.latitude = lat
-            responder.longitude = lng
-            responder.save()
+            return JsonResponse({'alert_id': alert.id})
             
-            return JsonResponse({'status': 'success'})
         except Exception as e:
-            return JsonResponse({'status': 'error', 'message': str(e)})
+            return JsonResponse({'error': str(e)}, status=500)
     
-    return JsonResponse({'status': 'invalid request'})
+    return JsonResponse({'error': 'Invalid request method or user type'}, status=400)
+
+@login_required
+def active_alert(request):
+    if request.user.user_type == 'victim':
+        alert = EmergencyAlert.objects.filter(
+            user=request.user,
+            status__in=['pending', 'dispatched', 'in_progress']
+        ).first()
+        
+        if alert:
+            data = {
+                'alert': {
+                    'id': alert.id,
+                    'emergency_type': alert.emergency_type.name if alert.emergency_type else 'Unknown',
+                    'latitude': str(alert.latitude),
+                    'longitude': str(alert.longitude),
+                    'status': alert.get_status_display(),
+                    'assigned_responder': {
+                        'name': alert.assigned_responder.user.get_full_name(),
+                        'latitude': str(alert.assigned_responder.latitude),
+                        'longitude': str(alert.assigned_responder.longitude)
+                    } if alert.assigned_responder else None
+                }
+            }
+            return JsonResponse(data)
+    
+    return JsonResponse({'alert': None})
+
+@login_required
+def alert_messages(request, alert_id):
+    alert = EmergencyAlert.objects.get(id=alert_id, user=request.user)
+    messages = EmergencyMessage.objects.filter(alert=alert).order_by('timestamp')
+    
+    data = {
+        'messages': [
+            {
+                'message': msg.message,
+                'timestamp': msg.timestamp.isoformat(),
+                'is_from_responder': msg.is_from_responder
+            } for msg in messages
+        ]
+    }
+    return JsonResponse(data)
+
+@login_required
+@csrf_exempt
+def send_message(request, alert_id):
+    if request.method == 'POST':
+        alert = EmergencyAlert.objects.get(id=alert_id, user=request.user)
+        data = json.loads(request.body)
+        
+        EmergencyMessage.objects.create(
+            alert=alert,
+            sender=request.user,
+            message=data['message'],
+            is_from_responder=False
+        )
+        return JsonResponse({'status': 'success'})
+    
+    return JsonResponse({'error': 'Invalid request'}, status=400)
+
+# Responder API Views
+@login_required
+@csrf_exempt
+def toggle_availability(request):
+    if request.method == 'POST' and request.user.user_type == 'responder':
+        responder = EmergencyResponder.objects.get(user=request.user)
+        responder.is_available = not responder.is_available
+        responder.save()
+        return JsonResponse({'is_available': responder.is_available})
+    return JsonResponse({'error': 'Invalid request'}, status=400)
+
+@login_required
+def responder_assignments(request):
+    if request.user.user_type == 'responder':
+        responder = EmergencyResponder.objects.get(user=request.user)
+        assignments = EmergencyAlert.objects.filter(
+            assigned_responder=responder,
+            status__in=['dispatched', 'in_progress']
+        )
+        
+        data = {
+            'assignments': [
+                {
+                    'id': alert.id,
+                    'emergency_type': alert.emergency_type.name,
+                    'latitude': str(alert.latitude),
+                    'longitude': str(alert.longitude),
+                    'status': alert.get_status_display(),
+                    'description': alert.description
+                } for alert in assignments
+            ]
+        }
+        return JsonResponse(data)
+    
+    return JsonResponse({'error': 'Unauthorized'}, status=403)
+
+@login_required
+@csrf_exempt
+def update_responder_location(request):
+    if request.method == 'POST' and request.user.user_type == 'responder':
+        data = json.loads(request.body)
+        responder = EmergencyResponder.objects.get(user=request.user)
+        responder.latitude = data['latitude']
+        responder.longitude = data['longitude']
+        responder.save()
+        return JsonResponse({'status': 'success'})
+    return JsonResponse({'error': 'Invalid request'}, status=400)
+
+@login_required
+@csrf_exempt
+def update_assignment_status(request, assignment_id):
+    if request.method == 'POST' and request.user.user_type == 'responder':
+        data = json.loads(request.body)
+        responder = EmergencyResponder.objects.get(user=request.user)
+        alert = EmergencyAlert.objects.get(id=assignment_id, assigned_responder=responder)
+        
+        if data['status'] in dict(EmergencyAlert.STATUS_CHOICES).keys():
+            alert.status = data['status']
+            alert.save()
+            return JsonResponse({'status': 'success'})
+    
+    return JsonResponse({'error': 'Invalid request'}, status=400)

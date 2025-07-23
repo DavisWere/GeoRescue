@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_head %}
+<script src="{% static 'js/victim.js' %}"></script>
+{% endblock %}
+
+{% block content %}
+<h1>Emergency Dashboard</h1>
+
+<div id="emergency-controls">
+    <button id="request-help">Request Emergency Help</button>
+    <select id="emergency-type">
+        <option value="">Select emergency type</option>
+        {% for type in emergency_types %}
+        <option value="{{ type.id }}">{{ type.name }}</option>
+        {% endfor %}
+    </select>
+    <textarea id="emergency-description" placeholder="Brief description (optional)"></textarea>
+</div>
+
+<div id="active-alert" style="display:none;">
+    <h2>Active Emergency</h2>
+    <p>Status: <span id="alert-status"></span></p>
+    <p>Responder: <span id="assigned-responder"></span></p>
+    <p>ETA: <span id="responder-eta"></span> minutes</p>
+    <div id="responder-map" style="height: 300px; width: 100%;"></div>
+
+    <h3>Communication</h3>
+    <div id="message-container">
+        <!-- Messages will appear here -->
+    </div>
+    <input type="text" id="message-input" placeholder="Type your message">
+    <button id="send-message">Send</button>
+</div>
+
+<div id="no-active-alert">
+    <p>No active emergencies. Click "Request Emergency Help" if you need assistance.</p>
+</div>
+{% endblock %}

@@ -1,111 +1,25 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GeoRescue - Emergency Response System</title>
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Font Awesome -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <!-- Custom CSS -->
-    <link href="/static/emergency/css/styles.css" rel="stylesheet">
+    <title>Emergency Response System</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    {% block extra_head %}{% endblock %}
 </head>
 
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-        <div class="container">
-            <a class="navbar-brand" href="#">
-                <i class="fas fa-life-ring"></i> GeoRescue
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav me-auto">
-                    {% if user.is_authenticated %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'emergency_alert' %}">
-                            <i class="fas fa-bell"></i> Emergency Alert
-                        </a>
-                    </li>
-                    {% if user.emergencyresponder %}
-                    <li class="nav-item">
-                        <span class="nav-link">
-                            <i class="fas fa-user-shield"></i> Responder Mode
-                        </span>
-                    </li>
-                    {% endif %}
-                    {% endif %}
-                </ul>
-                <ul class="navbar-nav">
-                    {% if user.is_authenticated %}
-                    <li class="nav-item">
-                        <span class="nav-link">Welcome, {{ user.get_full_name|default:user.username }}</span>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">
-                            <i class="fas fa-sign-out-alt"></i> Logout
-                        </a>
-                    </li>
-                    {% else %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'login' %}">
-                            <i class="fas fa-sign-in-alt"></i> Login
-                        </a>
-                    </li>
-                    {% endif %}
-                </ul>
-            </div>
-        </div>
-    </nav>
-
-    <div class="container mt-4">
-        {% if messages %}
-        {% for message in messages %}
-        <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
-            {{ message }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-        {% endfor %}
+    <nav>
+        {% if user.is_authenticated %}
+        <span>Welcome, {{ user.username }} ({{ user.user_type }})</span>
+        <a href="#">Logout</a>
+        {% else %}
+        <a href="#">Login</a>
+        <a href="#">Register</a>
         {% endif %}
-
-        {% block content %}
-        <!-- Content will be inserted here by child templates -->
-        {% endblock %}
-    </div>
-
-    <footer class="mt-5 py-3 bg-light">
-        <div class="container text-center">
-            <p class="mb-0">GeoRescue Emergency Response System &copy; {% now "Y" %}</p>
-        </div>
-    </footer>
-
-    <!-- Bootstrap JS Bundle with Popper -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- Custom JS -->
-    <script src="/static/emergency/js/main.js"></script>
+    </nav>
+    <main>
+        {% block content %}{% endblock %}
+    </main>
 </body>
 
 </html>
-<script>
-    // For responders to update their location periodically
-    if (document.getElementById('responder-location-update')) {
-        setInterval(function () {
-            navigator.geolocation.getCurrentPosition(function (position) {
-                fetch('/api/update-location/', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': '{{ csrf_token }}'
-                    },
-                    body: JSON.stringify({
-                        lat: position.coords.latitude,
-                        lng: position.coords.longitude
-                    })
-                });
-            });
-        }, 30000); // Update every 30 seconds
-    }
-</script>
