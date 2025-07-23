@@ -1,0 +1,101 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>Emergency Dashboard</h2>
+
+{% if active_alert %}
+<div class="alert-container">
+    <h3>Your Active Emergency</h3>
+    <p>Type: {{ active_alert.emergency_type }}</p>
+    <p>Status: {{ active_alert.get_status_display }}</p>
+
+    {% if active_alert.assigned_responder %}
+    <div class="responder-info">
+        <h4>Assigned Responder:</h4>
+        <p>{{ active_alert.assigned_responder.user.get_full_name }}</p>
+        <p>{{ active_alert.assigned_responder.organization }}</p>
+        <p>Contact: {{ active_alert.assigned_responder.contact_number }}</p>
+        <p>Distance: <span id="responder-distance">{{ responder_distance }}</span> km</p>
+    </div>
+
+    <a href="{% url 'emergency_chat' alert_id=active_alert.id %}" class="btn btn-chat">
+        Open Chat
+    </a>
+    {% else %}
+    <p>Waiting for responder to be assigned...</p>
+    {% endif %}
+</div>
+{% else %}
+<form method="post" id="emergencyForm">
+    {% csrf_token %}
+    <input type="hidden" name="lat" id="lat">
+    <input type="hidden" name="lng" id="lng">
+
+    <h3>Request Emergency Assistance</h3>
+
+    <div class="emergency-types">
+        {% for type in emergency_types %}
+        <button type="submit" name="emergency_type" value="{{ type.id }}" class="btn btn-emergency">
+            {{ type.name }}
+        </button>
+        {% endfor %}
+    </div>
+
+    <button type="submit" class="btn btn-sos">
+        GENERAL SOS
+    </button>
+</form>
+{% endif %}
+
+<script>
+    // Get location when form is submitted
+    document.getElementById('emergencyForm').addEventListener('submit', function (e) {
+        if (!navigator.geolocation) {
+            alert("Geolocation is not supported by your browser");
+            return;
+        }
+
+        navigator.geolocation.getCurrentPosition(
+            function (position) {
+                document.getElementById('lat').value = position.coords.latitude;
+                document.getElementById('lng').value = position.coords.longitude;
+                e.target.submit();
+            },
+            function () {
+                alert("Unable to get your location. Using approximate location.");
+                // Submit with empty coordinates (backend can handle)
+                e.target.submit();
+            }
+        );
+        e.preventDefault();
+    });
+
+    // Update distance in real-time if there's an active alert with responder
+    {% if active_alert and active_alert.assigned_responder %}
+    function updateDistance() {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(function (position) {
+                const victimLat = position.coords.latitude;
+                const victimLng = position.coords.longitude;
+                const responderLat = {{ active_alert.assigned_responder.latitude }
+            };
+            const responderLng = {{ active_alert.assigned_responder.longitude }
+        };
+
+        // Calculate distance (simplified for frontend)
+        const distance = Math.sqrt(
+            Math.pow(victimLat - responderLat, 2) +
+            Math.pow(victimLng - responderLng, 2)
+        ) * 111; // Approximate km conversion
+
+        document.getElementById('responder-distance').textContent = distance.toFixed(2);
+    });
+    }
+}
+
+    // Update every 10 seconds
+    setInterval(updateDistance, 10000);
+    updateDistance(); // Initial call
+    {% endif %}
+</script>
+{% endblock %}
