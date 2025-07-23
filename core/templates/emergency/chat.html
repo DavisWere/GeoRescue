@@ -5,7 +5,8 @@
     <div class="alert-header">
         <h2>Emergency Communication</h2>
         <div class="alert-status">
-            Status: <span class="badge badge-{{ alert.status == 'resolved'|yesno:'success,info' }}">
+            Status:
+            <span class="badge {% if alert.status == 'resolved' %}badge-success{% else %}badge-info{% endif %}">
                 {{ alert.get_status_display }}
             </span>
         </div>
