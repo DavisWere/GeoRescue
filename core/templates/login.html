@@ -1,0 +1,158 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - SwiftCollect</title>
+    <link rel="stylesheet" href="{% static 'css/login.css' %}">
+</head>
+
+<body>
+    <!-- Background Animation -->
+    <div class="background-animation">
+        <div class="floating-icon waste-icon"></div>
+        <div class="floating-icon truck-icon"></div>
+        <div class="floating-icon recycle-icon"></div>
+        <div class="floating-icon bin-icon"></div>
+        <div class="floating-icon leaf-icon"></div>
+    </div>
+
+    <!-- Login Container -->
+    <div class="login-container">
+        <!-- Left Panel - Branding -->
+        <div class="login-left">
+            <div class="brand-section">
+                <div class="logo">
+                    <h1>SwiftCollect</h1>
+                    <div class="logo-icon">
+                        <div class="icon-recycling"></div>
+                    </div>
+                </div>
+                <div class="brand-content">
+                    <h2>Smart Waste Management</h2>
+                    <p>Monitor pickups, optimize routes, and contribute to a sustainable future with our intelligent
+                        tracking system.</p>
+
+                    <div class="features-preview">
+                        <div class="feature-item">
+                            <div class="feature-icon check-icon"></div>
+                            <span>Real-time Tracking</span>
+                        </div>
+                        <div class="feature-item">
+                            <div class="feature-icon check-icon"></div>
+                            <span>Automated Scheduling</span>
+                        </div>
+                        <div class="feature-item">
+                            <div class="feature-icon check-icon"></div>
+                            <span>Sustainability Metrics</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stats-mini">
+                    <div class="stat-mini">
+                        <span class="stat-number">10K+</span>
+                        <span class="stat-label">Pickups</span>
+                    </div>
+                    <div class="stat-mini">
+                        <span class="stat-number">500+</span>
+                        <span class="stat-label">Clients</span>
+                    </div>
+                    <div class="stat-mini">
+                        <span class="stat-number">75%</span>
+                        <span class="stat-label">Recycling</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Panel - Login Form -->
+        <div class="login-right">
+            <div class="login-form-container">
+                <div class="login-header">
+                    <h2>Welcome Back</h2>
+                    <p>Sign in to your SwiftCollect account</p>
+                </div>
+
+                <form class="login-form" method="post">
+                    {% csrf_token %}
+
+                    <div class="form-group">
+                        <label for="username">Username or Email</label>
+                        <div class="input-container">
+                            <div class="input-icon user-icon"></div>
+                            <input type="text" id="username" name="username" placeholder="Enter your username or email"
+                                required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <div class="input-container">
+                            <div class="input-icon lock-icon"></div>
+                            <input type="password" id="password" name="password" placeholder="Enter your password"
+                                required>
+                            <div class="password-toggle" onclick="togglePassword()">
+                                <div class="eye-icon"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-options">
+                        <div class="remember-me">
+                            <input type="checkbox" id="remember" name="remember">
+                            <label for="remember">Remember me</label>
+                        </div>
+                        <a href="#" class="forgot-password">Forgot password?</a>
+                    </div>
+
+                    <button type="submit" class="login-btn">
+                        <span>Sign In</span>
+                        <div class="btn-icon arrow-icon"></div>
+                    </button>
+                </form>
+
+                <div class="login-divider">
+                    <span>or</span>
+                </div>
+
+                <div class="social-login">
+                    <button class="social-btn google-btn">
+                        <div class="social-icon google-icon"></div>
+                        <span>Continue with Google</span>
+                    </button>
+                    <button class="social-btn microsoft-btn">
+                        <div class="social-icon microsoft-icon"></div>
+                        <span>Continue with Microsoft</span>
+                    </button>
+                </div>
+
+                <div class="signup-link">
+                    <p>Don't have an account? <a href="#">Sign up here</a></p>
+                </div>
+            </div>
+
+            <!-- Back to Home -->
+            <div class="back-home">
+                <a href="#">
+                    <div class="back-icon"></div>
+                    <span>Back to Home</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner">
+            <div class="spinner-icon"></div>
+            <p>Signing you in...</p>
+        </div>
+    </div>
+
+    <script src="{% static 'js/login.js' %}"></script>
+</body>
+
+</html>

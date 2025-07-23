@@ -4,6 +4,7 @@ from . import views
 urlpatterns = [
     path('victim/', views.victim_dashboard, name='victim_dashboard'),
     path('responder/', views.responder_dashboard, name='responder_dashboard'),
+    path('login/', views.login_view, name='login'),
     
     # API endpoints for victims
     path('api/alerts/create/', views.create_alert, name='create_alert'),
