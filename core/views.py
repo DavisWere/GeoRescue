@@ -5,7 +5,8 @@ from django.contrib.auth import authenticate, login, logout
 from .models import EmergencyType, EmergencyAlert, EmergencyResponder, EmergencyMessage
 from math import radians, sin, cos, sqrt, atan2
 
-
+def home(request):
+    return render(request, 'home.html')
 
 def login_view(request):
     if request.method == "POST":

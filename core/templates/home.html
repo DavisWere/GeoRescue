@@ -1,0 +1,409 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GoRescue - Every Second Counts</title>
+    <link rel="stylesheet" href="{% static 'css/landing.css' %}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <i class="fas fa-shield-alt logo-icon"></i>
+                <span class="logo-text">GoRescue</span>
+            </div>
+            <div class="nav-menu">
+                <a href="#features" class="nav-link">Features</a>
+                <a href="#how-it-works" class="nav-link">How It Works</a>
+                <a href="#impact" class="nav-link">Impact</a>
+                <a href="#contact" class="nav-link">Contact</a>
+            </div>
+            <div class="nav-actions">
+                <a href="{% url 'login' %}" class="btn-secondary">Login</a>
+                <a href="#" class="btn-primary">Get Started</a>
+            </div>
+            <div class="mobile-menu-toggle">
+                <i class="fas fa-bars"></i>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-background">
+            <div class="hero-overlay"></div>
+        </div>
+        <div class="hero-container">
+            <div class="hero-content">
+                <div class="hero-badge">
+                    <i class="fas fa-heartbeat"></i>
+                    <span>Real-Time Emergency Response</span>
+                </div>
+                <h1 class="hero-title">
+                    When Every Second
+                    <span class="title-highlight">Counts</span>
+                </h1>
+                <p class="hero-subtitle">
+                    GoRescue connects victims with the nearest responders instantly.
+                    GPS-enabled emergency coordination that saves lives by reducing response times,
+                    especially in rural and underserved areas.
+                </p>
+                <div class="hero-actions">
+                    <a href="#" class="btn-hero-primary">
+                        <i class="fas fa-rocket"></i>
+                        Start Saving Lives
+                    </a>
+                    <a href="#demo" class="btn-hero-secondary">
+                        <i class="fas fa-play"></i>
+                        Watch Demo
+                    </a>
+                </div>
+                <div class="hero-stats">
+                    <div class="stat-item">
+                        <div class="stat-number">2.5x</div>
+                        <div class="stat-label">Faster Response</div>
+                    </div>
+                    <div class="stat-divider"></div>
+                    <div class="stat-item">
+                        <div class="stat-number">98%</div>
+                        <div class="stat-label">Location Accuracy</div>
+                    </div>
+                    <div class="stat-divider"></div>
+                    <div class="stat-item">
+                        <div class="stat-number">24/7</div>
+                        <div class="stat-label">Always Available</div>
+                    </div>
+                </div>
+            </div>
+            <div class="hero-visual">
+                <div class="phone-mockup">
+                    <div class="phone-screen">
+                        <div class="emergency-simulation">
+                            <div class="emergency-header">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                <span>Emergency Alert Active</span>
+                            </div>
+                            <div class="mini-map">
+                                <div class="victim-dot pulsing"></div>
+                                <div class="responder-dot moving"></div>
+                                <div class="connection-line"></div>
+                            </div>
+                            <div class="response-info">
+                                <div class="eta-display">
+                                    <i class="fas fa-clock"></i>
+                                    <span class="eta-time">3 min</span>
+                                </div>
+                                <div class="distance-display">
+                                    <i class="fas fa-route"></i>
+                                    <span class="distance-text">0.8 km away</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Problem Section -->
+    <section class="problem-section">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">The Challenge We're Solving</h2>
+                <p class="section-subtitle">
+                    In emergency situations, traditional response systems often fail when they're needed most
+                </p>
+            </div>
+            <div class="problem-grid">
+                <div class="problem-card">
+                    <div class="problem-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <h3>Delayed Response Times</h3>
+                    <p>Average emergency response time is 8-12 minutes in urban areas, and up to 30+ minutes in rural
+                        locations.</p>
+                </div>
+                <div class="problem-card">
+                    <div class="problem-icon">
+                        <i class="fas fa-map-marked"></i>
+                    </div>
+                    <h3>Location Confusion</h3>
+                    <p>Victims struggle to describe their exact location, leading to precious time lost in finding them.
+                    </p>
+                </div>
+                <div class="problem-card">
+                    <div class="problem-icon">
+                        <i class="fas fa-signal"></i>
+                    </div>
+                    <h3>Communication Gaps</h3>
+                    <p>Limited communication between victims and responders creates uncertainty and anxiety during
+                        emergencies.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works Section -->
+    <section id="how-it-works" class="how-it-works">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">How GoRescue Works</h2>
+                <p class="section-subtitle">
+                    Three simple steps to connect victims with responders in real-time
+                </p>
+            </div>
+            <div class="steps-container">
+                <div class="step-item">
+                    <div class="step-visual">
+                        <div class="step-circle">
+                            <span class="step-number">1</span>
+                        </div>
+                        <div class="step-graphic emergency-trigger">
+                            <i class="fas fa-hand-paper"></i>
+                            <div class="tap-indicator"></div>
+                        </div>
+                    </div>
+                    <div class="step-content">
+                        <h3>One-Tap Emergency Alert</h3>
+                        <p>Victim triggers an emergency alert with a single tap. The system automatically captures GPS
+                            location and identifies the emergency type.</p>
+                    </div>
+                </div>
+
+                <div class="step-arrow">
+                    <i class="fas fa-arrow-right"></i>
+                </div>
+
+                <div class="step-item">
+                    <div class="step-visual">
+                        <div class="step-circle">
+                            <span class="step-number">2</span>
+                        </div>
+                        <div class="step-graphic responder-dispatch">
+                            <i class="fas fa-ambulance"></i>
+                            <div class="dispatch-waves"></div>
+                        </div>
+                    </div>
+                    <div class="step-content">
+                        <h3>Instant Responder Dispatch</h3>
+                        <p>Our system finds the nearest available responder and dispatches them immediately with precise
+                            location data and emergency details.</p>
+                    </div>
+                </div>
+
+                <div class="step-arrow">
+                    <i class="fas fa-arrow-right"></i>
+                </div>
+
+                <div class="step-item">
+                    <div class="step-visual">
+                        <div class="step-circle">
+                            <span class="step-number">3</span>
+                        </div>
+                        <div class="step-graphic real-time-tracking">
+                            <div class="tracking-map-mini">
+                                <div class="victim-marker-mini"></div>
+                                <div class="responder-marker-mini"></div>
+                                <div class="path-line-mini"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="step-content">
+                        <h3>Real-Time Tracking</h3>
+                        <p>Both victim and responder can track each other's location in real-time, with live ETA updates
+                            and secure messaging capabilities.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="features-section">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Powerful Features</h2>
+                <p class="section-subtitle">
+                    Everything you need for effective emergency response coordination
+                </p>
+            </div>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-satellite-dish"></i>
+                    </div>
+                    <h3>GPS Precision</h3>
+                    <p>Accurate location tracking with fallback options for areas with poor signal coverage.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-bolt"></i>
+                    </div>
+                    <h3>Lightning Fast</h3>
+                    <p>Optimized for speed with instant alerts and real-time updates that work on low-bandwidth
+                        connections.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-mobile-alt"></i>
+                    </div>
+                    <h3>Mobile First</h3>
+                    <p>Designed for smartphones with offline capabilities to work in challenging environments.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h3>Secure Communication</h3>
+                    <p>Encrypted messaging and secure data transmission to protect sensitive emergency information.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-route"></i>
+                    </div>
+                    <h3>Smart Routing</h3>
+                    <p>Intelligent responder selection based on proximity, availability, and emergency type.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <h3>Analytics Dashboard</h3>
+                    <p>Comprehensive reporting and analytics to improve response times and system performance.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Impact Section -->
+    <section id="impact" class="impact-section">
+        <div class="container">
+            <div class="impact-content">
+                <div class="impact-text">
+                    <h2 class="section-title">Making a Real Difference</h2>
+                    <p class="impact-description">
+                        GoRescue is more than just technology—it's a lifeline that creates meaningful impact in
+                        communities,
+                        especially in rural and underserved areas where every second truly counts.
+                    </p>
+                    <div class="impact-metrics">
+                        <div class="metric-item">
+                            <div class="metric-value">67%</div>
+                            <div class="metric-label">Reduction in Response Time</div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-value">95%</div>
+                            <div class="metric-label">User Satisfaction Rate</div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-value">1000+</div>
+                            <div class="metric-label">Lives Positively Impacted</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="impact-visual">
+                    <div class="testimonial-card">
+                        <div class="testimonial-content">
+                            <i class="fas fa-quote-left quote-icon"></i>
+                            <p>"GoRescue helped us reach a cardiac emergency patient 5 minutes faster than usual. Those
+                                5 minutes made all the difference."</p>
+                            <div class="testimonial-author">
+                                <div class="author-info">
+                                    <strong>Dr. Sarah Chen</strong>
+                                    <span>Emergency Response Coordinator</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta-section">
+        <div class="container">
+            <div class="cta-content">
+                <h2 class="cta-title">Ready to Save Lives?</h2>
+                <p class="cta-subtitle">
+                    Join thousands of responders and organizations already using GoRescue to make emergency response
+                    faster and more effective.
+                </p>
+                <div class="cta-actions">
+                    <a href="#" class="btn-cta-primary">
+                        <i class="fas fa-rocket"></i>
+                        Get Started Today
+                    </a>
+                    <a href="#contact" class="btn-cta-secondary">
+                        <i class="fas fa-phone"></i>
+                        Contact Sales
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <div class="footer-logo">
+                        <i class="fas fa-shield-alt logo-icon"></i>
+                        <span class="logo-text">GoRescue</span>
+                    </div>
+                    <p class="footer-description">
+                        Connecting victims with responders through real-time GPS-enabled emergency coordination.
+                    </p>
+                    <div class="social-links">
+                        <a href="#" class="social-link"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="social-link"><i class="fab fa-linkedin"></i></a>
+                        <a href="#" class="social-link"><i class="fab fa-facebook"></i></a>
+                    </div>
+                </div>
+                <div class="footer-section">
+                    <h3>Product</h3>
+                    <ul class="footer-links">
+                        <li><a href="#features">Features</a></li>
+                        <li><a href="#how-it-works">How It Works</a></li>
+                        <li><a href="#pricing">Pricing</a></li>
+                        <li><a href="#api">API</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3>Company</h3>
+                    <ul class="footer-links">
+                        <li><a href="#about">About Us</a></li>
+                        <li><a href="#careers">Careers</a></li>
+                        <li><a href="#press">Press</a></li>
+                        <li><a href="#blog">Blog</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3>Support</h3>
+                    <ul class="footer-links">
+                        <li><a href="#help">Help Center</a></li>
+                        <li><a href="#contact">Contact</a></li>
+                        <li><a href="#privacy">Privacy</a></li>
+                        <li><a href="#terms">Terms</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 GoRescue. All rights reserved. Saving lives through technology.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="{% static 'js/landing.js' %}"></script>
+</body>
+
+</html>

@@ -1,155 +1,230 @@
 {% load static %}
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
-    <title>GoRescue Dashboard</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GoRescue - Responder Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'css/responder_dashboard.css' %}">
 </head>
 
 <body>
-    <h1>GoRescue Dashboard</h1>
+    <div class="container">
+        <!-- Header Section -->
+        <header class="dashboard-header">
+            <div class="logo-section">
+                <i class="fas fa-shield-alt logo-icon"></i>
+                <h1>GoRescue Dashboard</h1>
+            </div>
+            <div class="status-indicator">
+                <div class="status-dot {% if responder.is_available %}available{% else %}unavailable{% endif %}"></div>
+                <span>{% if responder.is_available %}Available{% else %}Unavailable{% endif %}</span>
+            </div>
+        </header>
 
-    <h2>Your Status</h2>
-    <div>
-        <p>Organization: {{ responder.organization }}</p>
-        <p>Current Status: {% if responder.is_available %}Available{% else %}Unavailable{% endif %}</p>
-        <p>Last Location Update: {{ responder.last_updated|timesince }} ago</p>
-        <p>Coordinates: {{ responder.latitude|floatformat:5 }}, {{ responder.longitude|floatformat:5 }}</p>
+        <div class="dashboard-content">
+            <!-- Responder Status Section -->
+            <section class="responder-status-section">
+                <div class="section-header">
+                    <i class="fas fa-user-shield"></i>
+                    <h2>Your Status</h2>
+                </div>
+                <div class="status-grid">
+                    <div class="status-card">
+                        <div class="status-card-header">
+                            <i class="fas fa-building"></i>
+                            <span>Organization</span>
+                        </div>
+                        <div class="status-card-value">{{ responder.organization }}</div>
+                    </div>
+                    <div class="status-card">
+                        <div class="status-card-header">
+                            <i class="fas fa-clock"></i>
+                            <span>Last Update</span>
+                        </div>
+                        <div class="status-card-value">{{ responder.last_updated|timesince }} ago</div>
+                    </div>
+                    <div class="status-card">
+                        <div class="status-card-header">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span>Coordinates</span>
+                        </div>
+                        <div class="status-card-value">{{ responder.latitude|floatformat:5 }}, {{
+                            responder.longitude|floatformat:5 }}</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Location Update Section -->
+            <section class="location-update-section">
+                <div class="section-header">
+                    <i class="fas fa-location-arrow"></i>
+                    <h2>Update Your Location</h2>
+                </div>
+                <form method="post" id="locationForm" class="location-form">
+                    {% csrf_token %}
+                    <div class="location-controls">
+                        <button type="button" id="getLocationBtn" class="location-btn">
+                            <i class="fas fa-crosshairs"></i>
+                            Get Current Location
+                        </button>
+                        <div id="locationStatus" class="location-status">
+                            Location not updated
+                        </div>
+                    </div>
+                    <input type="hidden" name="latitude" id="latitude" value="{{ responder.latitude }}">
+                    <input type="hidden" name="longitude" id="longitude" value="{{ responder.longitude }}">
+                    <button type="submit" id="updateLocationBtn" class="submit-btn" disabled>
+                        <i class="fas fa-save"></i>
+                        Update Location
+                    </button>
+                </form>
+            </section>
+
+            <!-- Assigned Alerts Section -->
+            <section class="assigned-alerts-section">
+                <div class="section-header">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <h2>Assigned Alerts</h2>
+                    {% if assigned_alerts %}
+                    <span class="alert-count">{{ assigned_alerts|length }}</span>
+                    {% endif %}
+                </div>
+
+                {% if assigned_alerts %}
+                <div class="alerts-container">
+                    {% for alert in assigned_alerts %}
+                    <div class="alert-card">
+                        <div class="alert-header">
+                            <div class="alert-type">
+                                <i class="fas fa-exclamation-circle"></i>
+                                {{ alert.emergency_type }}
+                            </div>
+                            <div class="alert-status status-{{ alert.status|lower }}">
+                                {{ alert.get_status_display }}
+                            </div>
+                        </div>
+
+                        <div class="alert-info">
+                            <div class="alert-time">
+                                <i class="fas fa-clock"></i>
+                                {{ alert.timestamp|timesince }} ago
+                            </div>
+                            <a href="{% url 'responder_alert_detail' alert.id %}" class="view-messages-btn">
+                                <i class="fas fa-eye"></i>
+                                View Details
+                            </a>
+                        </div>
+
+                        <div class="tracking-container">
+                            <div class="tracking-map">
+                                <div class="victim-marker" title="Emergency Location">
+                                    <i class="fas fa-exclamation"></i>
+                                </div>
+                                <div class="responder-marker" title="Your Location">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                                <div class="path-line" style="
+                                            left: 30%; 
+                                            top: 60%; 
+                                            width: 40%; 
+                                            transform: rotate(-25deg);
+                                        "></div>
+                            </div>
+
+                            <div class="tracking-info">
+                                <div class="distance-info">
+                                    <i class="fas fa-route"></i>
+                                    <span>Distance:</span>
+                                    <span class="distance-value distance" data-alert-lat="{{ alert.latitude }}"
+                                        data-alert-lon="{{ alert.longitude }}"
+                                        data-responder-lat="{{ responder.latitude }}"
+                                        data-responder-lon="{{ responder.longitude }}">
+                                        Calculating...
+                                    </span>
+                                </div>
+                                <div class="eta-info">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                    <span>Location:</span>
+                                    <span class="eta-value">{{ alert.latitude|floatformat:3 }}, {{
+                                        alert.longitude|floatformat:3 }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="no-alerts">
+                    <i class="fas fa-check-circle"></i>
+                    <p>No Currently Assigned Alerts</p>
+                    <small>You're all caught up! New alerts will appear here when assigned.</small>
+                </div>
+                {% endif %}
+            </section>
+
+            <!-- Recently Completed Alerts Section -->
+            <section class="completed-alerts-section">
+                <div class="section-header">
+                    <i class="fas fa-check-double"></i>
+                    <h2>Recently Completed Alerts</h2>
+                    {% if completed_alerts %}
+                    <span class="alert-count completed">{{ completed_alerts|length }}</span>
+                    {% endif %}
+                </div>
+
+                {% if completed_alerts %}
+                <div class="completed-alerts-list">
+                    {% for alert in completed_alerts %}
+                    <div class="completed-alert-item">
+                        <div class="completed-alert-info">
+                            <div class="completed-alert-type">
+                                <i class="fas fa-check-circle"></i>
+                                {{ alert.emergency_type }}
+                            </div>
+                            <div class="completed-alert-date">
+                                {{ alert.timestamp|date:"M d, Y H:i" }}
+                            </div>
+                        </div>
+                        <div class="completed-status">
+                            <span class="resolved-badge">Resolved</span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="no-alerts">
+                    <i class="fas fa-history"></i>
+                    <p>No Completed Alerts Yet</p>
+                    <small>Completed alerts will be shown here for your reference.</small>
+                </div>
+                {% endif %}
+            </section>
+        </div>
+
+        <!-- Footer Actions -->
+        <footer class="dashboard-footer">
+            <div class="footer-actions">
+                <a href="{% url 'logout' %}" class="footer-btn logout-btn">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Logout
+                </a>
+                <a href="#" class="footer-btn">
+                    <i class="fas fa-print"></i>
+                    Print Report
+                </a>
+                <a href="#" class="footer-btn">
+                    <i class="fas fa-cog"></i>
+                    Settings
+                </a>
+            </div>
+        </footer>
     </div>
 
-    <h2>Update Your Location</h2>
-    <form method="post" id="locationForm">
-        {% csrf_token %}
-        <div>
-            <button type="button" id="getLocationBtn">Get Current Location</button>
-            <span id="locationStatus">(Location not updated)</span>
-            <input type="hidden" name="latitude" id="latitude" value="{{ responder.latitude }}">
-            <input type="hidden" name="longitude" id="longitude" value="{{ responder.longitude }}">
-        </div>
-        <button type="submit" id="updateLocationBtn" disabled>Update Location</button>
-    </form>
-
-    <h2>Assigned Alerts</h2>
-    {% if assigned_alerts %}
-    <ul>
-        {% for alert in assigned_alerts %}
-        <li>
-            {{ alert.emergency_type }} - {{ alert.timestamp|timesince }} ago
-            <p>Status: {{ alert.get_status_display }}</p>
-            <p>Location: {{ alert.latitude|floatformat:5 }}, {{ alert.longitude|floatformat:5 }}</p>
-            <p>Distance: <span class="distance" data-alert-lat="{{ alert.latitude }}"
-                    data-alert-lon="{{ alert.longitude }}" data-responder-lat="{{ responder.latitude }}"
-                    data-responder-lon="{{ responder.longitude }}">
-                    Calculating...
-                </span></p>
-            <a href="{% url 'responder_alert_detail' alert.id %}">View Details</a>
-        </li>
-        {% endfor %}
-    </ul>
-    {% else %}
-    <p>No currently assigned alerts</p>
-    {% endif %}
-
-    <h2>Recently Completed Alerts</h2>
-    {% if completed_alerts %}
-    <ul>
-        {% for alert in completed_alerts %}
-        <li>
-            {{ alert.emergency_type }} - {{ alert.timestamp|date:"M d, Y H:i" }}
-            <span>(Resolved)</span>
-        </li>
-        {% endfor %}
-    </ul>
-    {% else %}
-    <p>No completed alerts yet</p>
-    {% endif %}
-
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            // Location update functionality
-            const getLocationBtn = document.getElementById('getLocationBtn');
-            const locationStatus = document.getElementById('locationStatus');
-            const latitudeInput = document.getElementById('latitude');
-            const longitudeInput = document.getElementById('longitude');
-            const updateLocationBtn = document.getElementById('updateLocationBtn');
-
-            getLocationBtn.addEventListener('click', function () {
-                locationStatus.textContent = "Detecting your location...";
-
-                if (navigator.geolocation) {
-                    navigator.geolocation.getCurrentPosition(
-                        function (position) {
-                            const lat = position.coords.latitude;
-                            const lng = position.coords.longitude;
-
-                            latitudeInput.value = lat;
-                            longitudeInput.value = lng;
-
-                            locationStatus.textContent = `Location ready to update: ${lat.toFixed(5)}, ${lng.toFixed(5)}`;
-                            locationStatus.style.color = 'green';
-                            updateLocationBtn.disabled = false;
-
-                            if (position.coords.accuracy) {
-                                locationStatus.textContent += ` (±${Math.round(position.coords.accuracy)}m)`;
-                            }
-                        },
-                        function (error) {
-                            let errorMessage = "Error: ";
-                            switch (error.code) {
-                                case error.PERMISSION_DENIED:
-                                    errorMessage += "Location permission denied";
-                                    break;
-                                case error.POSITION_UNAVAILABLE:
-                                    errorMessage += "Location unavailable";
-                                    break;
-                                case error.TIMEOUT:
-                                    errorMessage += "Location request timed out";
-                                    break;
-                                default:
-                                    errorMessage += "Couldn't get location";
-                            }
-                            locationStatus.textContent = errorMessage;
-                            locationStatus.style.color = 'red';
-                        },
-                        { enableHighAccuracy: true, timeout: 10000 }
-                    );
-                } else {
-                    locationStatus.textContent = "Geolocation not supported";
-                    locationStatus.style.color = 'red';
-                }
-            });
-
-            // Calculate distances for all alerts
-            document.querySelectorAll('.distance').forEach(el => {
-                const alertLat = parseFloat(el.getAttribute('data-alert-lat'));
-                const alertLon = parseFloat(el.getAttribute('data-alert-lon'));
-                const responderLat = parseFloat(el.getAttribute('data-responder-lat'));
-                const responderLon = parseFloat(el.getAttribute('data-responder-lon'));
-
-                if (!isNaN(alertLat) && !isNaN(alertLon) &&
-                    !isNaN(responderLat) && !isNaN(responderLon)) {
-                    const distance = calculateDistance(alertLat, alertLon, responderLat, responderLon);
-                    el.textContent = `${distance.toFixed(1)} km`;
-                }
-            });
-
-            function calculateDistance(lat1, lon1, lat2, lon2) {
-                const R = 6371; // Earth radius in km
-                const dLat = radians(lat2 - lat1);
-                const dLon = radians(lon2 - lon1);
-                const a =
-                    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-                    Math.cos(radians(lat1)) * Math.cos(radians(lat2)) *
-                    Math.sin(dLon / 2) * Math.sin(dLon / 2);
-                const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-                return R * c;
-            }
-
-            function radians(degrees) {
-                return degrees * Math.PI / 180;
-            }
-        });
-    </script>
+    <script src="{% static 'js/responder_dashboard.js' %}"></script>
 </body>
 
 </html>
