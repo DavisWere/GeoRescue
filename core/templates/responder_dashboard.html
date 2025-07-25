@@ -212,16 +212,94 @@
                     <i class="fas fa-sign-out-alt"></i>
                     Logout
                 </a>
-                <a href="#" class="footer-btn">
+                <a href="#" class="footer-btn" id="printReportBtn">
                     <i class="fas fa-print"></i>
                     Print Report
                 </a>
-                <a href="#" class="footer-btn">
+                <a href="{% url 'edit_profile' %}" class="footer-btn">
                     <i class="fas fa-cog"></i>
-                    Settings
+                    Edit Profile
                 </a>
             </div>
         </footer>
+        
+        <!-- PDF Viewer Modal -->
+        <div id="pdfModal" class="modal">
+            <div class="modal-content">
+                <span class="close-modal">&times;</span>
+                <iframe id="pdfViewer" style="width:100%; height:80vh; border:none;"></iframe>
+            </div>
+        </div>
+        
+        <style>
+            .modal {
+                display: none;
+                position: fixed;
+                z-index: 1000;
+                left: 0;
+                top: 0;
+                width: 100%;
+                height: 100%;
+                background-color: rgba(0, 0, 0, 0.7);
+            }
+        
+            .modal-content {
+                background-color: #fefefe;
+                margin: 5% auto;
+                padding: 20px;
+                border: 1px solid #888;
+                width: 80%;
+                max-width: 900px;
+                border-radius: 8px;
+            }
+        
+            .close-modal {
+                color: #aaa;
+                float: right;
+                font-size: 28px;
+                font-weight: bold;
+                cursor: pointer;
+            }
+        
+            .close-modal:hover {
+                color: black;
+            }
+        </style>
+        
+        <script>
+            // PDF Report functionality
+            document.getElementById('printReportBtn').addEventListener('click', function (e) {
+                    e.preventDefault();
+
+                    // // Show loading state
+                    // const originalContent = this.innerHTML;
+                    // this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
+
+                    // Create a new window/tab for the PDF
+                    const pdfWindow = window.open("{% url 'responder_report' %}", '_blank');
+
+                    // Handle case where popup is blocked
+                    if (!pdfWindow) {
+                        alert('Please allow popups for this site to view the report');
+                        this.innerHTML = originalContent;
+                        return;
+                    }
+
+                    // Check if PDF loaded successfully
+                    const checkLoaded = setInterval(() => {
+                        try {
+                            if (pdfWindow.document.readyState === 'complete') {
+                                clearInterval(checkLoaded);
+                                this.innerHTML = originalContent;
+                            }
+                        } catch (e) {
+                            // Cross-origin check failed means PDF is loaded
+                            clearInterval(checkLoaded);
+                            this.innerHTML = originalContent;
+                        }
+                    }, 100);
+                });
+        </script>
     </div>
 
     <script src="{% static 'js/responder_dashboard.js' %}"></script>

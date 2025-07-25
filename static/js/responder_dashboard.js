@@ -229,53 +229,6 @@ document.addEventListener('DOMContentLoaded', function () {
         }, 120000);
     }
 
-    // Update server with current location
-    function updateServerLocation(latitude, longitude) {
-        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]');
-        if (!csrfToken) return;
-
-        fetch('/api/responders/update_location/', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-                'X-CSRFToken': csrfToken.value
-            },
-            body: `latitude=${latitude}&longitude=${longitude}&csrfmiddlewaretoken=${csrfToken.value}`
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                console.log('Location updated successfully');
-            }
-        })
-        .catch(error => {
-            console.error('Error updating location:', error);
-        });
-    }
-
-    // Check for new assignments
-    function checkForNewAssignments() {
-        fetch('/api/responders/assignments/')
-        .then(response => response.json())
-        .then(data => {
-            if (data.assignments && data.assignments.length > 0) {
-                // Check if there are new assignments
-                const currentAssignments = document.querySelectorAll('.alert-card').length;
-                if (data.assignments.length > currentAssignments) {
-                    // New assignment detected - could trigger notification
-                    showNotification('New emergency assignment received!', 'alert');
-                    // Optionally reload the page to show new assignments
-                    setTimeout(() => {
-                        window.location.reload();
-                    }, 2000);
-                }
-            }
-        })
-        .catch(error => {
-            console.error('Error checking assignments:', error);
-        });
-    }
-
     // Show notification (if you want to add notification functionality)
     function showNotification(message, type = 'info') {
         // Create notification element

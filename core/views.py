@@ -1,9 +1,15 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.http import HttpResponse
+from django.template.loader import get_template
+from io import BytesIO
+from xhtml2pdf import pisa
 from django.contrib.auth import authenticate, login, logout
 from .models import EmergencyType, EmergencyAlert, EmergencyResponder, EmergencyMessage
 from math import radians, sin, cos, sqrt, atan2
+from django.utils import timezone  
+from .forms import UserProfileForm
 
 def home(request):
     return render(request, 'home.html')
@@ -41,8 +47,7 @@ def logout_view(request):
     logout(request)  
     return redirect('/')
 
-
-@login_required
+@login_required(login_url='login') 
 def victim_dashboard(request):
     if request.user.user_type != 'victim':
         return redirect('home')  # or wherever you want to redirect non-victims
@@ -119,7 +124,7 @@ def assign_nearest_responder(alert):
         return nearest_responder
     return None
 
-@login_required
+@login_required(login_url='login') 
 def alert_messages(request, alert_id):
     try:
         alert = EmergencyAlert.objects.get(id=alert_id, user=request.user)
@@ -146,8 +151,7 @@ def alert_messages(request, alert_id):
     }
     return render(request, 'alert_messages.html', context)
 
-
-@login_required
+@login_required(login_url='login') 
 def responder_dashboard(request):
     if request.user.user_type != 'responder':
         return redirect('home')  # or appropriate redirect
@@ -189,7 +193,7 @@ def responder_dashboard(request):
     }
     return render(request, 'responder_dashboard.html', context)
 
-@login_required
+@login_required(login_url='login') 
 def responder_alert_detail(request, alert_id):
     try:
         alert = EmergencyAlert.objects.get(
@@ -227,3 +231,63 @@ def responder_alert_detail(request, alert_id):
         'messages': messages,
     }
     return render(request, 'responder_alert_detail.html', context)
+
+
+
+def generate_responder_report(request):
+    try:
+        alerts = EmergencyAlert.objects.filter(
+            assigned_responder__user=request.user
+        ).order_by('-timestamp')
+        
+        categorized_alerts = {
+            'pending': alerts.filter(status='pending'),
+            'dispatched': alerts.filter(status='dispatched'),
+            'in_progress': alerts.filter(status='in_progress'),
+            'resolved': alerts.filter(status='resolved'),
+        }
+        
+        context = {
+            'categorized_alerts': categorized_alerts,
+            'responder': request.user.emergencyresponder,
+            'generated_on': timezone.now()
+        }
+        
+        template = get_template('responder_report_pdf.html')
+        html = template.render(context)
+        
+        # Create a bytes buffer for the PDF
+        result = BytesIO()
+        pdf = pisa.CreatePDF(html, dest=result)
+        
+        if not pdf.err:
+            response = HttpResponse(
+                result.getvalue(),
+                content_type='application/pdf'
+            )
+            response['Content-Disposition'] = 'inline; filename="emergency_report.pdf"'
+            return response
+        else:
+            return HttpResponse("PDF generation failed", status=500)
+            
+    except Exception as e:
+        return HttpResponse(f"Error: {str(e)}", status=500)
+    
+
+@login_required(login_url='login') 
+def edit_profile(request):
+    responder = request.user.emergencyresponder
+    
+    if request.method == 'POST':
+        form = UserProfileForm(request.POST, instance=responder)
+        if form.is_valid():
+            form.save()
+            return redirect('responder_dashboard')
+    else:
+        form = UserProfileForm(instance=responder)
+    
+    context = {
+        'form': form,
+        'responder': responder
+    }
+    return render(request, 'edit_profile.html', context)
