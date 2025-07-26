@@ -291,3 +291,8 @@ def edit_profile(request):
         'responder': responder
     }
     return render(request, 'edit_profile.html', context)
+
+
+# def register_victim(request):
+
+

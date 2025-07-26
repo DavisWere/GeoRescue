@@ -5,7 +5,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - SwiftCollect</title>
+    <title>Login -GoRescue</title>
     <link rel="stylesheet" href="{% static 'css/login.css' %}">
 </head>
 
@@ -25,45 +25,16 @@
         <div class="login-left">
             <div class="brand-section">
                 <div class="logo">
-                    <h1>SwiftCollect</h1>
+                    <h1>GoRescue</h1>
                     <div class="logo-icon">
                         <div class="icon-recycling"></div>
                     </div>
                 </div>
                 <div class="brand-content">
-                    <h2>Smart Waste Management</h2>
-                    <p>Monitor pickups, optimize routes, and contribute to a sustainable future with our intelligent
-                        tracking system.</p>
-
-                    <div class="features-preview">
-                        <div class="feature-item">
-                            <div class="feature-icon check-icon"></div>
-                            <span>Real-time Tracking</span>
-                        </div>
-                        <div class="feature-item">
-                            <div class="feature-icon check-icon"></div>
-                            <span>Automated Scheduling</span>
-                        </div>
-                        <div class="feature-item">
-                            <div class="feature-icon check-icon"></div>
-                            <span>Sustainability Metrics</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="stats-mini">
-                    <div class="stat-mini">
-                        <span class="stat-number">10K+</span>
-                        <span class="stat-label">Pickups</span>
-                    </div>
-                    <div class="stat-mini">
-                        <span class="stat-number">500+</span>
-                        <span class="stat-label">Clients</span>
-                    </div>
-                    <div class="stat-mini">
-                        <span class="stat-number">75%</span>
-                        <span class="stat-label">Recycling</span>
-                    </div>
+                    <h2>GoRescue</h2>
+                    <p>GoRescue connects victims with the nearest responders instantly.
+                    GPS-enabled emergency coordination that saves lives by reducing response times,
+                    especially in rural and underserved areas.</p>
                 </div>
             </div>
         </div>
@@ -73,14 +44,14 @@
             <div class="login-form-container">
                 <div class="login-header">
                     <h2>Welcome Back</h2>
-                    <p>Sign in to your SwiftCollect account</p>
+                    <p>Sign in to your GoRescue account</p>
                 </div>
 
                 <form class="login-form" method="post">
                     {% csrf_token %}
 
                     <div class="form-group">
-                        <label for="username">Username or Email</label>
+                        <label for="username">Username</label>
                         <div class="input-container">
                             <div class="input-icon user-icon"></div>
                             <input type="text" id="username" name="username" placeholder="Enter your username or email"
@@ -117,18 +88,6 @@
                 <div class="login-divider">
                     <span>or</span>
                 </div>
-
-                <div class="social-login">
-                    <button class="social-btn google-btn">
-                        <div class="social-icon google-icon"></div>
-                        <span>Continue with Google</span>
-                    </button>
-                    <button class="social-btn microsoft-btn">
-                        <div class="social-icon microsoft-icon"></div>
-                        <span>Continue with Microsoft</span>
-                    </button>
-                </div>
-
                 <div class="signup-link">
                     <p>Don't have an account? <a href="#">Sign up here</a></p>
                 </div>
@@ -151,8 +110,6 @@
             <p>Signing you in...</p>
         </div>
     </div>
-
-    <script src="{% static 'js/login.js' %}"></script>
 </body>
 
 </html>
