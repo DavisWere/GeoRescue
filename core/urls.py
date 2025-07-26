@@ -6,6 +6,7 @@ urlpatterns = [
     path('victim/dashboard/', views.victim_dashboard, name='victim_dashboard'),
     path('victim/alerts/<int:alert_id>/messages/', views.alert_messages, name='alert_messages'),
     path('login/', views.login_view, name='login'),
+    path("signup/", views.register_victim, name="signup"),
     path('logout/', views.logout_view, name='logout'),
     path('profile/edit/', views.edit_profile, name='edit_profile'),
     path('responder/report/', views.generate_responder_report, name='responder_report'),

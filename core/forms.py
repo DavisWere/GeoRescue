@@ -1,6 +1,7 @@
 from django import forms
 from .models import EmergencyResponder
-from django.contrib.auth.models import User
+from .models import User
+from django.contrib.auth.forms import UserCreationForm
 
 class UserProfileForm(forms.ModelForm):
     first_name = forms.CharField(max_length=30, required=True)
@@ -32,3 +33,16 @@ class UserProfileForm(forms.ModelForm):
             responder.save()
             self.save_m2m()
         return responder
+    
+
+class VictimRegistrationForm(UserCreationForm):
+    class Meta:
+        model = User
+        fields = ['phone_number', "username","first_name", "last_name", "email",  "password1", "password2"]
+
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        user.user_type = "victim"  
+        if commit:
+            user.save()
+        return user  

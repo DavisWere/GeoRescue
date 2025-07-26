@@ -1,0 +1,167 @@
+{% load static %}
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/signup.css' %}">
+
+<div class="signup-wrapper">
+    <!-- Left Side - Branding and Features -->
+    <div class="brand-section">
+        <div class="brand-header">
+            <div class="logo-container">
+                <div class="logo-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" />
+                        <path d="M12 2a10 10 0 0 0 0 20" stroke="currentColor" stroke-width="2" />
+                    </svg>
+                </div>
+            </div>
+
+            <h1 class="brand-name">
+                <span class="brand-swift">Go</span><span class="brand-collect">Rescue</span>
+                <div class="brand-icon">
+                    <svg width="32" height="32" viewBox="0 0 32 32">
+                        <circle cx="16" cy="16" r="14" fill="#10B981" />
+                        <path d="M10 16l4 4 8-8" stroke="white" stroke-width="2" fill="none" />
+                    </svg>
+                </div>
+            </h1>
+        </div>
+
+        <div class="feature-section">
+            <h2 class="feature-title">GoRescue</h2>
+            <p class="feature-description">
+                GoRescue connects victims with the nearest responders instantly. GPS-enabled emergency coordination that saves lives by
+                reducing response times, especially in rural and underserved areas.
+            </p>
+
+            <div class="features-list">
+                <div class="feature-item">
+                    <div class="feature-check">
+                        <svg width="20" height="20" viewBox="0 0 20 20">
+                            <circle cx="10" cy="10" r="9" fill="#10B981" />
+                            <path d="M6 10l3 3 5-5" stroke="white" stroke-width="2" fill="none" />
+                        </svg>
+                    </div>
+                    <span>Real-time Tracking</span>
+                </div>
+
+                <div class="feature-item">
+                    <div class="feature-check">
+                        <svg width="20" height="20" viewBox="0 0 20 20">
+                            <circle cx="10" cy="10" r="9" fill="#10B981" />
+                            <path d="M6 10l3 3 5-5" stroke="white" stroke-width="2" fill="none" />
+                        </svg>
+            <div class="form-content">
+                <h2 class="form-title">Create Account</h2>
+                <form method="post" class="registration-form">
+                    {% csrf_token %}
+
+                    <div class="form-group">
+                        <label for="id_username" class="form-label">
+                            Username
+                            <span class="required-indicator">*</span>
+                        </label>
+                        <input type="text" name="username" id="id_username" class="form-input" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="id_email" class="form-label">
+                            Email Address
+                            <span class="required-indicator">*</span>
+                        </label>
+                        <input type="email" name="email" id="id_email" class="form-input" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="id_first_name" class="form-label">First Name</label>
+                        <input type="text" name="first_name" id="id_first_name" class="form-input">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="id_last_name" class="form-label">Last Name</label>
+                        <input type="text" name="last_name" id="id_last_name" class="form-input">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="id_password1" class="form-label">
+                            Password
+                            <span class="required-indicator">*</span>
+                        </label>
+                        <div class="password-input-container">
+                            <input type="password" name="password1" id="id_password1" class="form-input" required>
+                            <button type="button" class="password-toggle">
+                                <svg width="20" height="20" viewBox="0 0 20 20">
+                                    <path d="M1 10s3-7 9-7 9 7 9 7-3 7-9 7-9-7-9-7z" stroke="currentColor"
+                                        stroke-width="2" fill="none" />
+                                    <circle cx="10" cy="10" r="3" stroke="currentColor" stroke-width="2" fill="none" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="id_password2" class="form-label">
+                            Confirm Password
+                            <span class="required-indicator">*</span>
+                        </label>
+                        <div class="password-input-container">
+                            <input type="password" name="password2" id="id_password2" class="form-input" required>
+                            <button type="button" class="password-toggle">
+                                <svg width="20" height="20" viewBox="0 0 20 20">
+                                    <path d="M1 10s3-7 9-7 9 7 9 7-3 7-9 7-9-7-9-7z" stroke="currentColor"
+                                        stroke-width="2" fill="none" />
+                                    <circle cx="10" cy="10" r="3" stroke="currentColor" stroke-width="2" fill="none" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="form-group checkbox-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="terms" class="checkbox-input" required>
+                            <span class="checkbox-custom"></span>
+                            <span class="checkbox-text">
+                                I agree to the <a href="#" class="terms-link">Terms of Service</a> and
+                                <a href="#" class="terms-link">Privacy Policy</a>
+                            </span>
+                        </label>
+                    </div>
+
+                    <button type="submit" class="submit-button">
+                        Create Account
+                        <svg width="16" height="16" viewBox="0 0 16 16">
+                            <path d="M6 12l4-4-4-4" stroke="currentColor" stroke-width="2" fill="none" />
+                        </svg>
+                    </button>
+                </form>
+
+                <div class="form-divider">
+                    <span>or</span>
+                </div>
+
+                <button class="google-signin-button">
+                    <svg width="20" height="20" viewBox="0 0 20 20">
+                        <path
+                            d="M19.99 10.187c0-.82-.069-1.417-.216-2.037H10.2v3.698h5.62c-.113.865-.568 2.164-1.638 3.037l-.251.164 2.634 2.042.183.018c1.541-1.425 2.442-3.523 2.442-6.022z"
+                            fill="#4285F4" />
+                        <path
+                            d="M10.2 19.931c2.217 0 4.064-.694 5.42-1.928l-2.566-1.988c-.694.462-1.604.768-2.854.768-2.191 0-4.041-1.397-4.708-3.315l-.194.016-2.73 2.115-.071.186c1.348 2.675 4.104 4.146 7.703 4.146z"
+                            fill="#34A853" />
+                        <path
+                            d="M5.492 11.468a6.043 6.043 0 0 1-.313-1.887c0-.657.113-1.295.313-1.887l-.016-.175-2.801-2.177-.194.092c-.676 1.347-1.067 2.866-1.067 4.547s.391 3.2 1.067 4.547l2.711-2.06z"
+                            fill="#FBBC05" />
+                        <path
+                            d="M10.2 3.853c1.562 0 2.613.674 3.205 1.227l2.329-2.27C14.253.365 12.417-.262 10.2-.262c-3.599 0-6.355 1.471-7.703 4.146L5.192 6.07c.667-1.918 2.517-3.215 4.708-3.215z"
+                            fill="#EA4335" />
+                    </svg>
+                    Continue with Google
+                </button>
+
+                <div class="signin-link">
+                    Already have an account? <a href="/login/" class="link">Sign in here</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="{% static 'js/signup.js' %}"></script>
+{% endblock %}

@@ -6,10 +6,10 @@ from django.template.loader import get_template
 from io import BytesIO
 from xhtml2pdf import pisa
 from django.contrib.auth import authenticate, login, logout
-from .models import EmergencyType, EmergencyAlert, EmergencyResponder, EmergencyMessage
+from .models import EmergencyType, EmergencyAlert, EmergencyResponder, EmergencyMessage, User
 from math import radians, sin, cos, sqrt, atan2
 from django.utils import timezone  
-from .forms import UserProfileForm
+from .forms import UserProfileForm, VictimRegistrationForm
 
 def home(request):
     return render(request, 'home.html')
@@ -274,7 +274,8 @@ def generate_responder_report(request):
         return HttpResponse(f"Error: {str(e)}", status=500)
     
 
-@login_required(login_url='login') 
+
+@login_required(login_url='/login/')
 def edit_profile(request):
     responder = request.user.emergencyresponder
     
@@ -293,6 +294,14 @@ def edit_profile(request):
     return render(request, 'edit_profile.html', context)
 
 
-# def register_victim(request):
-
+def register_victim(request):
+    if request.method == "POST":
+        form = VictimRegistrationForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect("login")
+    else:
+        form = VictimRegistrationForm()
+    
+    return render(request, "signup.html", {"form": form})
 
