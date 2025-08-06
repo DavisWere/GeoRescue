@@ -12,6 +12,10 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 from pathlib import Path
 import os
+from dotenv import load_dotenv
+load_dotenv()
+import pymysql
+pymysql.install_as_MySQLdb()
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -20,12 +24,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-40nmb+#^ba3tynm*%+4o!yx5_(*c%!t_(qiu_c(0pv4@q_0i#7'
+SECRET_KEY = os.getenv('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv('DEBUG')
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"]
 
 
 # Application definition
@@ -43,6 +47,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -75,10 +80,22 @@ WSGI_APPLICATION = 'geo_rescue.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'railway',
+        'USER':'root',
+        'PASSWORD':  os.getenv('PASSWORD'),
+        'HOST': os.getenv('HOST'),     # or 'localhost'
+        'PORT': os.getenv('PORT'),  
+        'CONN_MAX_AGE': 60,  # Keep connection alive for 60 seconds
+        'OPTIONS': {
+            'connect_timeout': 30,  # Increase connection timeout
+            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",  # Optional
+            'read_timeout': 300,  # Increase read timeout
+            'write_timeout': 300,  # Increase write timeout
+        },
     }
 }
+
 
 
 # Password validation
